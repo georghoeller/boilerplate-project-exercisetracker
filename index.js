@@ -42,17 +42,27 @@ app.post('/api/users', async (req, res) => {
     const user = await userObj.save();
     console.log(user)
     res.json(user)
-  } catch(err) { console.log(err) }
+  } catch(err) { 
+    console.log(err) 
+    res.send("Error occured.")
+  }
   
 });
 
 
-// ADD EXCERCISES
+// GET ALL USER DATA
+app.get('/api/users', async (req, res) => {
+  const users = await User.find({})
+    .select("id_ username");
+  res.json(users);
+});
+
+// ADD EXCERCISES TO ONE USER
 app.post('/api/users/:_id/exercises', async (req, res) => {
   
   const id = req.params._id;
   const {description, duration, date } = req.body;
-
+try {
   const user = await User.findById(id);
   
   if (!user) {res.send("Could not find User.");
@@ -74,24 +84,57 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
         date : new Date(excercise.date).toDateString()
       })
     }
+  } catch (err) {
+    console.log(err)
+    res.send("User not found.")
+  }
+    // with try catch: reasonable error messages are possible 
 
 });
 
 
 
-// GET ALL USER DATA
-app.get('/api/users', (req, res) => {
-  res.json() //return list of all users
-});
+// // GET USER DATA
+// app.get('/api/users/:username', (req, res) => {
+//   const username = req.body.username;
+//   res.json() //return list of all users
+// });
 
-// GET USER DATA
-app.get('/api/users/:username', (req, res) => {
-  const username = req.body.username;
-  res.json() //return list of all users
-});
+// GET ALL THE LOGS FROM ONE USER
+app.get('/api/users/:_id/logs', async (req, res) => {
+  const {from, to, limit }  = req.query;
+  const id = req.params._id;
+  const user = await User.findById(id);
+
+  let filter = {user_id : id};
+  let dateObj = {}
+  if (from) dateObj["$gte"] = new Date(from);
+  if (to) dateObj["$lte"] = new Date(to);
+  if (from || to) filter.date = dateObj;
+
+  try {
+
+    const excercises = await Excercise.find(filter).limit(limit ?? 500);
+  
+    const log = excercises.map(e => ({
+      description : e.ddescription,
+      duration : e.duration,
+      date : e.date.toDateString()
+    }));
+
+    res.json({
+      username: user.username,
+      count: excercises.length ,
+      _id: id,
+      log: log,
+    });
+
+    } catch(err) {
+      console.log(err)
+      res.send("Excercise Log not found.")
+    }
 
 
-app.post('/api/users/:_id/logs', (req, res) => {
 });
 
 const listener = app.listen(process.env.PORT || 8080, () => {
