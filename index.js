@@ -62,33 +62,29 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
   
   const id = req.params._id;
   const {description, duration, date } = req.body;
-try {
-  const user = await User.findById(id);
   
-  if (!user) {res.send("Could not find User.");
+    const user = await User.findById(id);
     
-  } else {
-      const excerciseObj = new Excercise({
-        user_id : id,
-        description : description , 
-        duration , 
-        date: date ? new Date(date) : new Date()
-      })
-      const excercise = await excerciseObj.save()
+    if (!user) {res.send("Could not find User.");
+      
+    } else {
+        const excerciseObj = new Excercise({
+          user_id : id,
+          description : description , 
+          duration : duration , 
+          date: date ? new Date(date) : new Date()
+        })
+        const excercise = await excerciseObj.save()
 
-      res.json({
-        _id : user._id,
-        username : user.username,
-        description : excercise.description,
-        excercise : excercise.duration,
-        date : new Date(excercise.date).toDateString()
-      })
-    }
-  } catch (err) {
-    console.log(err)
-    res.send("User not found.")
-  }
-    // with try catch: reasonable error messages are possible 
+        res.json({
+          _id : user._id,
+          username : user.username,
+          description : excercise.description,
+          duration : excercise.duration,
+          date : new Date(excercise.date).toDateString()
+        })
+      }
+  
 
 });
 
@@ -117,7 +113,7 @@ app.get('/api/users/:_id/logs', async (req, res) => {
     const excercises = await Excercise.find(filter).limit(limit ?? 500);
   
     const log = excercises.map(e => ({
-      description : e.ddescription,
+      description : e.description,
       duration : e.duration,
       date : e.date.toDateString()
     }));
