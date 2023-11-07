@@ -1,3 +1,8 @@
+// FIREBASE DEPLOY EXPRESS API
+// https://www.youtube.com/watch?v=LW26kpjGl2c
+
+const {onRequest} = require("firebase-functions/v2/https");
+
 const express = require('express')
 const app = express()
 
@@ -136,6 +141,8 @@ app.get('/api/users/:_id/logs', async (req, res) => {
 const listener = app.listen(process.env.PORT || 8080, () => {
   console.log('Your app is listening on port ' + listener.address().port)
 })
+
+exports.api = onRequest(app);
 
 // RESPONSES: 
 
